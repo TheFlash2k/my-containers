@@ -7,7 +7,7 @@ Under the hood, pwn-chal utilizes [`ynetd`](https://github.com/johnsonjh/ynetd) 
 
 A sample Dockerfile is as follows:
 
-```docker
+```dockerfile
 FROM theflash2k/pwn-chal:latest
 
 ENV CHAL_NAME=baby-pwn
