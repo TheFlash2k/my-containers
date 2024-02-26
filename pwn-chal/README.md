@@ -119,6 +119,6 @@ COPY ${CHAL_NAME} ${CHAL_NAME}
 | latest | Ubuntu 22.04 |
 | python | Ubuntu 20.04 + Python3.8 |
 | cpp | Ubuntu 22.04 + g++ |
-| arm | Ubuntu 20.04 for arm (QEMU with Docker) |
-| arm64 | Ubuntu 20.04 for arm64/aarch64 (QEMU with Docker) |
+| arm | Ubuntu 22.04 for arm (QEMU with Docker) |
+| arm64 | Ubuntu 22.04 for arm64/aarch64 (QEMU with Docker) |
 | mips | Not yet implemented |
