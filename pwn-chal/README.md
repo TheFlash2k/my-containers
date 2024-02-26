@@ -82,4 +82,4 @@ TheFlash2k
 | latest | Ubuntu 22.04 |
 | python | Ubuntu 20.04 + Python3.8 |
 | cpp | Ubuntu 22.04 + g++ |
-| arm | Ubuntu 22.04 for arm with QEMU |
+| armv8 | Ubuntu 20.04 for arm (QEMU with Docker) |
