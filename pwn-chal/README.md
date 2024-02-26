@@ -75,6 +75,41 @@ Regards,
 TheFlash2k
 ```
 
+## Image-specific details
+
+### ARM & ARM64
+
+In order to run the `arm` and `arm64` containers, you need to run the following command on the host first:
+
+```bash
+# Install the qemu packages
+sudo apt-get install qemu binfmt-support qemu-user-static
+
+# This step will execute the registering scripts
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+```
+
+For debugging, you can set the following environment variable:
+
+### QEMU_GDB_PORT
+
+This port will be passed to the underlying `qemu-arm` command and will enable remote GDB debugging on the specified port.
+
+| **NOTE**: When debugging is enabled, the container will run, and run the GDB port on the specified port, and since the program will run in a `while [[ 1 ]]` loop, it will continue to do so. However, the `stdin`, `stdout` and `stderr` aren't redirected to GDB, and therefore, running the container with `-d` option will not work the way you'd expect it to.
+
+If you know how to fix it, please contact me, or a simple Pull Request with the fix ;).
+
+A sample Dockerfile with debugging enabled:
+
+```dockerfile
+FROM theflash2k/pwn-chal:arm
+
+ENV CHAL_NAME=baby-arm
+ENV QEMU_GDB_PORT=7000
+
+COPY ${CHAL_NAME} ${CHAL_NAME}
+```
+
 ## Tags:
 
 | Tag | Version |
@@ -82,4 +117,6 @@ TheFlash2k
 | latest | Ubuntu 22.04 |
 | python | Ubuntu 20.04 + Python3.8 |
 | cpp | Ubuntu 22.04 + g++ |
-| armv8 | Ubuntu 20.04 for arm (QEMU with Docker) |
+| arm | Ubuntu 20.04 for arm (QEMU with Docker) |
+| arm64 | Ubuntu 20.04 for arm64/aarch64 (QEMU with Docker) |
+| mips | Not yet implemented |
