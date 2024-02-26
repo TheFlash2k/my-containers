@@ -104,6 +104,5 @@ else
     rm -f /opt/socat
     # -lt => cpu time in seconds. Keeps connection opened for max 10 seconds.
     # -se => stderr to redirect to socket
-    echo "command: LD_LIBRARY_PATH=\"$LIBRARY_PATH\" \"$EMULATOR\" -L \"$LIBRARY_PATH\" /opt/ynetd -lt 1 -p \"$PORT\" -u \"$RUN_AS\" -se y -d \"$START_DIR\" \"/app/$CHAL_NAME\" 2>&1 | tee -a $LOG_FILE"
     LD_LIBRARY_PATH="$LIBRARY_PATH" "$EMULATOR" -L "$LIBRARY_PATH" "/opt/ynetd" -lt 1 -p "$PORT" -u "$RUN_AS" -se y -d "$START_DIR" "/app/$CHAL_NAME"
 fi
