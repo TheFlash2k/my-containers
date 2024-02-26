@@ -39,3 +39,15 @@ This port will be passed to the underlying `qemu-arm` command and will enable re
 | **NOTE**: When debugging is enabled, the container will run, and run the GDB port on the specified port, and since the program will run in a `while [[ 1 ]]` loop, it will continue to do so. However, the `stdin`, `stdout` and `stderr` aren't redirected to GDB, and therefore, running the container with `-d` option will not work the way you'd expect it to.
 
 If you know how to fix it, please contact me, or a simple Pull Request with the fix ;).
+
+A sample Dockerfile with debugging enabled:
+
+```dockerfile
+FROM theflash2k/pwn-chal:arm
+
+ENV CHAL_NAME=baby-arm
+ENV QEMU_GDB_PORT=7000
+
+COPY ${CHAL_NAME} ${CHAL_NAME}
+```
+
