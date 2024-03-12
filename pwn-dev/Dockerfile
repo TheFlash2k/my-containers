@@ -1,0 +1,83 @@
+FROM ubuntu:22.04
+
+RUN dpkg --add-architecture i386 && \
+	apt update
+
+ENV LC_CTYPE=C.UTF-8
+
+# Installing LIBS
+RUN DEBIAN_FRONTEND=noninteractive \
+	TZ=GB apt install -y \
+	libc6:i386 \
+	libncurses5:i386 \
+	libstdc++6:i386 \
+	gcc \
+	g++ \
+	build-essential \
+	python3 \
+	python3-pip \
+	gpg \
+	ruby \
+	strace \
+	ltrace \
+	ruby-dev \
+	liblzma-dev \
+	liblzo2-dev \
+	zlib1g-dev \
+	nasm \
+	bless \
+	unzip \
+	p7zip-full \
+	cmake \
+	libcapstone-dev \
+	autoconf \
+	g++-multilib \
+	gcc-multilib \
+	curl \
+	wget \
+	git \
+	patchelf \
+	gdb \
+	dos2unix \
+	elfutils \
+	bat \
+	screen \
+	tmux \
+	libseccomp-dev \
+	nano \
+	zsh
+
+# Installing shit for aesthetics ;-;
+RUN chsh -s /usr/bin/zsh && \
+	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+WORKDIR /root
+RUN git clone https://github.com/gpakosz/.tmux.git && \
+	ln -s -f .tmux/.tmux.conf && \
+	cp .tmux/.tmux.conf.local .
+
+# Installing python-based tools:
+RUN pip3 install \
+	argparse \
+	pwntools \
+	prompt_toolkit \
+	ropper \
+	ROPGadget \
+	angr \
+	IPython
+
+# Installing other important tools:
+RUN gem install \
+	heapinfo \
+	one_gadget \
+	seccomp-tools
+
+# Installing GDB plugins:
+RUN git clone https://github.com/pwndbg/pwndbg /opt/pwndbg && \
+	cd /opt/pwndbg && \
+	./setup.sh
+
+RUN mkdir -p /chal
+WORKDIR /chal
+
+ENTRYPOINT [ "/usr/bin/zsh" ]

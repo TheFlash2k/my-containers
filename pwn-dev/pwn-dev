@@ -1,0 +1,10 @@
+#!/bin/bash
+
+docker run \
+	-it \
+	--rm \
+	--name pwn-dev \
+	--hostname pwn-dev \
+	-v `pwd`:/chal \
+	--privileged \
+	theflash2k/pwn-dev \
