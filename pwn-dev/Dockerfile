@@ -64,7 +64,8 @@ RUN pip3 install \
 	ropper \
 	ROPGadget \
 	angr \
-	IPython
+	IPython \
+	uncompyle6
 
 # Installing other important tools:
 RUN gem install \
