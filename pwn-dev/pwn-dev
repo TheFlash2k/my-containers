@@ -1,5 +1,37 @@
 #!/bin/bash
 
+function usage() {
+	echo "$0 <version>"
+	echo "Versions:"
+	echo -e "\t 18 - 18.04"
+	echo -e "\t 20 - 20.04"
+	echo -e "\t 22 - 22.04"
+	echo -e "Default: latest (22.04)"
+	exit 1
+}
+
+IMAGE="theflash2k/pwn-dev"
+TAG=""
+
+if [[ $#  != 1 ]]; then
+	TAG="latest"
+else
+	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+		usage
+	elif  [[ "$1" == "18" ]]; then
+		TAG="18.04"
+	elif [[ "$1" == "20" ]]; then
+		TAG="20.04"
+	elif [[ "$1" == "22" || "$1" == "latest" ]]; then
+		TAG="22.04"
+	else
+		echo "Invalid version number."
+		usage
+	fi
+fi
+
+echo "[*] Running $IMAGE version: $TAG"
+
 docker run \
 	-it \
 	--rm \
@@ -7,4 +39,4 @@ docker run \
 	--hostname pwn-dev \
 	-v `pwd`:/chal \
 	--privileged \
-	theflash2k/pwn-dev \
+	"$IMAGE:$TAG"
