@@ -1,13 +1,6 @@
 #!/bin/bash
 # Author: @TheFlash2k
 
-function run_gdb_server() {
-    while [[ 1 ]]; do
-        LD_LIBRARY_PATH="$LIBRARY_PATH" $EMULATOR -g $QEMU_GDB_PORT -L "$LIBRARY_PATH" "/app/$CHAL_NAME"
-    done
-    
-}
-
 DEFAULT_PORT=8000
 DEFAULT_CHAL_NAME="chal"
 DEFAULT_BASE="ynetd"
@@ -79,35 +72,14 @@ fi
 # Making the files read-only (only works if permissions allowed to the running container)
 chattr +i "$FLAG_FILE" "/app/$CHAL_NAME" &>/dev/null 
 
-###### QEMU SETUP #######
-LIBRARY_PATH="/usr/arm-linux-gnueabihf";
-EMULATOR="qemu-arm"
-
-ln -s "$LIBRARY_PATH/lib/ld-linux-armhf.so.3" "/usr/lib/ld-linux-armhf.so.3"
-ln -s "$LIBRARY_PATH/lib/ld-linux.so.3" "/lib/ld-linux.so.3" &>/dev/null
-ln -s "$LIBRARY_PATH/lib/libc.so.6" "/lib/libc.so.6" &>/dev/null
-
-export LD_LIBRARY_PATH="$LIBRARY_PATH"
-echo "[QEMU] using $EMULATOR and libraries @ $LIBRARY_PATH"
-
 cd "$START_DIR";
-
-# Run the gdb server, host the binary.
-## NOTE: The binary will be hosted, but the stdin/out/err won't be redirected, so you'll have to communicate using docker :(
-# if someone can help me with this, that'll be helpful, ty.
-if [ ! -z "$QEMU_GDB_PORT" ]; then
-    echo "[GDB] Enabling QEMU's GDB remote debugging on $QEMU_GDB_PORT"
-    run_gdb_server
-    exit 0
-fi
-
 echo "Running $CHAL_NAME in $(pwd) as $RUN_AS using $BASE and listening locally on $PORT"
 if [ "$BASE" == "socat" ]; then
     rm -f /opt/ynetd
-    LD_LIBRARY_PATH="$LIBRARY_PATH" "$EMULATOR" -L "$LIBRARY_PATH" su $RUN_AS -c "/opt/socat tcp-l:$PORT,reuseaddr,fork, EXEC:\"/app/$CHAL_NAME\",stderr | tee -a $LOG_FILE"
+    su $RUN_AS -c "/opt/socat tcp-l:$PORT,reuseaddr,fork, EXEC:\"/app/$CHAL_NAME\",stderr | tee -a $LOG_FILE"
 else
     rm -f /opt/socat
     # -lt => cpu time in seconds. Keeps connection opened for max 10 seconds.
     # -se => stderr to redirect to socket
-    LD_LIBRARY_PATH="$LIBRARY_PATH" "$EMULATOR" -L "$LIBRARY_PATH" "/opt/ynetd" -lt 1 -p "$PORT" -u "$RUN_AS" -se y -d "$START_DIR" "/app/$CHAL_NAME"
+    /opt/ynetd -lt 1 -p $PORT -u $RUN_AS -se y -d $START_DIR "/app/$CHAL_NAME" | tee -a $LOG_FILE
 fi

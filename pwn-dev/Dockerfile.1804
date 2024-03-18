@@ -55,6 +55,12 @@ RUN git clone https://github.com/gpakosz/.tmux.git && \
 	cp .tmux/.tmux.conf.local .
 
 # Installing python-based tools:
+RUN pip3 install --upgrade \
+	pip \
+	setuptools \
+	setuptools-rust \
+	wheel
+
 RUN pip3 install \
 	argparse \
 	pwntools \
@@ -69,11 +75,12 @@ RUN pip3 install \
 RUN gem install \
 	heapinfo \
 	one_gadget \
-	seccomp-tools
+	seccomp-tools:1.5.0
 
 # Installing GDB plugins:
 RUN git clone https://github.com/pwndbg/pwndbg /opt/pwndbg && \
 	cd /opt/pwndbg && \
+	git checkout 2023.03.19 && \
 	./setup.sh
 
 RUN mkdir -p /chal

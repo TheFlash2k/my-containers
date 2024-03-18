@@ -5,6 +5,7 @@
 [Github](https://github.com/TheFlash2k/my-containers/tree/main/pwn-chal)
 
 You can use this image to easily deploy your challenges without having to setup anything.
+
 Under the hood, pwn-chal utilizes [`ynetd`](https://github.com/johnsonjh/ynetd) to serve the challenge to host. `socat` can be utilized as well by setting `BASE` environment variable.
 
 A sample Dockerfile is as follows:
@@ -20,7 +21,8 @@ COPY flag.txt flag.txt
 | **NOTE**: Challenge binary **MUST** be placed inside the `/app` directory. Default WORKDIR is set to `/app`
 
 The binaries will run in the context of user `ctf-player` rather than root.
-| This CAN be overriden with the use of OVERRIDE_USER environment variable
+
+| This CAN be overriden with the use of **OVERRIDE_USER** environment variable
 
 Following environment variables can be changed to your own likings:
 ```bash
@@ -116,9 +118,14 @@ COPY ${CHAL_NAME} ${CHAL_NAME}
 
 | Tag | Version |
 | --- | --- |
-| latest | Ubuntu 22.04 |
+| latest | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
+| 2204 | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
+| 2004 | Ubuntu 20.04@sha256:80ef4a44043dec4490506e6cc4289eeda2d106a70148b74b5ae91ee670e9c35d |
+| 1804 | Ubuntu 18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 |
+| x86 | theflash2k/pwn-chal:latest with gcc-multilib installed for 32-bit support |
+| seccomp | theflash2k/pwn-chal:latest with libseccomp-dev installed |
 | python | Ubuntu 20.04 + Python3.8 |
 | cpp | Ubuntu 22.04 + g++ |
-| arm | Ubuntu 22.04 for arm (QEMU with Docker) |
-| arm64 | Ubuntu 22.04 for arm64/aarch64 (QEMU with Docker) |
+| arm | Ubuntu 22.04 for arm (QEMU with Docker) [Also with GDB Remote Debugging] |
+| arm64 | Ubuntu 22.04 for arm64/aarch64 (QEMU with Docker) [Also with GDB Remote Debugging] |
 | mips | Not yet implemented |
