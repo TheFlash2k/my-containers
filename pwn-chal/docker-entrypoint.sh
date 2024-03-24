@@ -122,6 +122,7 @@ cd "$START_DIR";
 info "Running \e[33m$CHAL_NAME\e[0m in \e[32m$(pwd)\e[0m as \e[36m$RUN_AS\e[0m using \e[35m$BASE\e[0m and listening locally on \e[34m$PORT\e[0m"
 if [ "$BASE" == "socat" ]; then
     rm -f /opt/ynetd
+    shopt -s nocasematch
     [ "$REDIRECT_STDERR" == "y" ] && REDIRECT_STDERR=",stderr"
     su $RUN_AS -c "/opt/socat tcp-l:$PORT,reuseaddr,fork, EXEC:\"/app/$CHAL_NAME\"$REDIRECT_STDERR | tee -a $LOG_FILE"
 else
