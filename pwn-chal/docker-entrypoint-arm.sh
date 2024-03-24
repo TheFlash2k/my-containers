@@ -79,7 +79,7 @@ if [ -z "$LIBRARY_PATH" ]; then
     exit 1
 fi
 
-if [ -z "$EMUALTOR" ]; then
+if [ -z "$EMULATOR" ]; then
     echo "EMULATOR not set!"
     exit 1
 fi
