@@ -10,7 +10,7 @@ $(VERSIONS):
 builder:
 	echo "Building $(BASE_IMG):$(VERSION)"
 	@if [ -e "Dockerfile.$(VERSION)" ]; then \
-        docker build --no-cache -t "$(BASE_IMG):$(VERSION)" -f "Dockerfile.$(VERSION)" . ; \
+        docker build -t "$(BASE_IMG):$(VERSION)" -f "Dockerfile.$(VERSION)" . ; \
     else \
         echo "Dockerfile for version $(VERSION) does not exist."; \
     fi

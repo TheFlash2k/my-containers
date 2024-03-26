@@ -5,8 +5,7 @@ RUN apt update \
     DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" \
     apt install -y \
         qemu-user \
-        binutils-arm-linux-gnueabihf \
-        libc6-armhf-cross \
+        libc6-arm64-cross \
     && \
     apt-get clean
 
@@ -16,10 +15,10 @@ WORKDIR /app
 RUN adduser --disabled-password ctf-player
 
 # Setting up challenge stuff
-COPY utilities/arm/flag.txt /app/flag.txt
-COPY utilities/arm/chal /app/chal
-COPY utilities/arm/ynetd /opt/ynetd
-COPY utilities/arm/socat /opt/socat
+COPY utilities/arm64/flag.txt /app/flag.txt
+COPY utilities/arm64/chal /app/chal
+COPY utilities/arm64/ynetd /opt/ynetd
+COPY utilities/arm64/socat /opt/socat
 RUN chmod +x /opt/*
 
 # Setting up log stuff
@@ -33,6 +32,7 @@ RUN chmod o-rwx / 2>/dev/null
 # QEMU-Specific ENVs for ARM/ARM64 distinction:
 ENV LIBRARY_PATH="/usr/aarch64-linux-gnu"
 ENV EMULATOR="qemu-aarch64"
+
 
 COPY docker-entrypoint-arm.sh /docker-entrypoint.sh
 CMD ["/docker-entrypoint.sh"]
