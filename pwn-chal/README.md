@@ -122,10 +122,12 @@ COPY ${CHAL_NAME} ${CHAL_NAME}
 | 2204 | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
 | 2004 | Ubuntu 20.04@sha256:80ef4a44043dec4490506e6cc4289eeda2d106a70148b74b5ae91ee670e9c35d |
 | 1804 | Ubuntu 18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 |
+| 1604 | Ubuntu 16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6 |
 | x86 | theflash2k/pwn-chal:latest with gcc-multilib installed for 32-bit support |
+| x86-cpp | theflash2k/pwn-chal:latest with g++-multilib installed for 32-bit support |
 | seccomp | theflash2k/pwn-chal:latest with libseccomp-dev installed |
-| python | Ubuntu 20.04 + Python3.8 |
-| cpp | Ubuntu 22.04 + g++ |
-| arm | Ubuntu 22.04 for arm (QEMU with Docker) [Also with GDB Remote Debugging] |
-| arm64 | Ubuntu 22.04 for arm64/aarch64 (QEMU with Docker) [Also with GDB Remote Debugging] |
+| py38 | python:3.8-slim-buster with my magic |
+| cpp | theflash2k/pwn-chal:latest with libstdc++ for C++ support |
+| arm | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da with QEMU [Also with GDB Remote Debugging] |
+| arm64 | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da with QEMU [Also with GDB Remote Debugging] |
 | mips | Not yet implemented |
