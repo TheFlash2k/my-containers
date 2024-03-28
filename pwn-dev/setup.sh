@@ -51,23 +51,6 @@ DEBIAN_FRONTEND=noninteractive \
 	radare2 \
 	zsh
 
-apt install -y software-properties-common && \
-	add-apt-repository -y ppa:jblgf0/python \
-	&& apt purge -y pythoRUN n3 python3-pip \
-	&& apt update \
-	&& apt install -y python3.6 \
-	&& curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6
-
-pip3 install \
-		argparse \
-		pwntools \
-		prompt_toolkit \
-		ropper \
-		ROPGadget \
-		angr \
-		IPython \
-		uncompyle6
-
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then 
 	apt install -y software-properties-common && \
