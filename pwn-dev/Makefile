@@ -1,34 +1,18 @@
-all:
-	$(BUILD)
-	$(RUN)
+BASE_IMG = theflash2k/pwn-dev
+VERSIONS = latest 2204 2004 1804 1604
 
-build:
-	docker build -t theflash2k/pwn-dev:latest .
-	docker tag theflash2k/pwn-dev:latest theflash2k/pwn-dev:22.04
+.PHONY: all
+all: $(VERSIONS)
 
-20:
-	docker build -t theflash2k/pwn-dev:20.04 -f Dockerfile.2004 .
+$(VERSIONS):
+	@$(MAKE) builder VERSION="$@"
 
-18:
-	docker build -t theflash2k/pwn-dev:18.04 -f Dockerfile.1804 .
-
-22:
-	docker build -t theflash2k/pwn-dev:22.04 .
-	docker tag theflash2k/pwn-dev:22.04 theflash2k/pwn-dev:latest
-
-run:
-	# This will run as a privileged container, beware; huehuehue
-	docker run \
-	-it \
-	--rm \
-	--name pwn-dev \
-	--hostname pwn-dev \
-	-v `pwd`:/chal \
-	--privileged \
-	theflash2k/pwn-dev
-
-stop:
-	docker stop pwn-dev
-
-clean:
-	docker rmi pwn-dev --force
+builder:
+	@echo "Building $(BASE_IMG):$(VERSION)"
+	@if [ -e "Dockerfile.$(VERSION)" ]; then \
+        docker build -t \
+        	"$(BASE_IMG):$(VERSION)" \
+        	-f "Dockerfile.$(VERSION)" . ; \
+    else \
+        echo "Dockerfile for version $(VERSION) does not exist."; \
+    fi

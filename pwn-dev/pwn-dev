@@ -1,34 +1,36 @@
 #!/bin/bash
 
 function usage() {
-	echo "$0 <version>"
-	echo "Versions:"
-	echo -e "\t 18 - 18.04"
-	echo -e "\t 20 - 20.04"
-	echo -e "\t 22 - 22.04"
-	echo -e "Default: latest (22.04)"
-	exit 1
+	echo "Usage: $0 <version>"
+	echo "Available versions:"
+	for i in "${AVAILABLE[@]}"; do
+		echo -en "\t $i"
+		[ "$i" == "$DEFAULT" ] && echo -n "   <-- Default"
+		echo
+	done
+	echo; exit 1
 }
 
 IMAGE="theflash2k/pwn-dev"
-TAG=""
+DEFAULT="latest"
+AVAILABLE=( "latest" "2204" "2004" "1804" "1604")
 
-if [[ $#  != 1 ]]; then
-	TAG="latest"
+TAG=""
+if [[ $# -ne 1 ]]; then
+	TAG="$DEFAULT"
 else
 	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
 		usage
-	elif  [[ "$1" == "18" ]]; then
-		TAG="18.04"
-	elif [[ "$1" == "20" ]]; then
-		TAG="20.04"
-	elif [[ "$1" == "22" || "$1" == "latest" ]]; then
-		TAG="22.04"
 	else
-		echo "Invalid version number."
-		usage
+		for i in "${AVAILABLE[@]}"; do
+			if [[ "$1" == "$i" || "$i" == "$1""04" ]]; then
+				TAG="$i"
+				break
+			fi
+		done
 	fi
 fi
+[ -z "$TAG" ] && TAG="$DEFAULT"
 
 echo "[*] Running $IMAGE version: $TAG"
 
