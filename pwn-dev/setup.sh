@@ -141,3 +141,6 @@ git clone https://github.com/yrp604/rappel /opt/rappel
 cd /opt/rappel
 make
 mv ./bin/rappel /usr/bin/
+make clean
+ARCH=x86 make
+mv ./bin/rappel /usr/bin/rappel-x86
