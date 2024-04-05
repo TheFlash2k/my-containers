@@ -61,7 +61,7 @@ if [[ "$VERSION" == "16.04" ]]; then
 	&& curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6
 else
 	pip3 install --upgrade \
-	pip3 \
+	pip \
 	setuptools \
 	setuptools-rust \
 	wheel
@@ -81,6 +81,7 @@ pip3 install \
 # Installing GDB plugins:
 git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
 cd /opt/pwndbg
+git checkout 2023.03.19
 ./setup.sh
 git clone https://github.com/longld/peda.git /opt/peda
 mkdir /opt/gef/
@@ -140,5 +141,3 @@ git clone https://github.com/yrp604/rappel /opt/rappel
 cd /opt/rappel
 make
 mv ./bin/rappel /usr/bin/
-ARCH=x86 make
-mv ./bin/rappel /usr/bin/rappel-x86
