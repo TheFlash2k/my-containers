@@ -2,7 +2,7 @@
 
 [Dockerhub](https://hub.docker.com/repository/docker/theflash2k/pwn-chal/)
 
-[Github](https://github.com/TheFlash2k/my-containers/tree/main/pwn-chal)
+[Github](https://github.com/TheFlash2k/pwn-chal)
 
 You can use this image to easily deploy your challenges without having to setup anything.
 
@@ -120,9 +120,9 @@ COPY ${CHAL_NAME} ${CHAL_NAME}
 
 ## Tags:
 
-| Tag | Version |
-| --- | --- |
-| latest | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
+| Tag | Version | Sample |
+| --- | --- | --- |
+| latest | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da | 
 | 2204 | Ubuntu 22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
 | 2004 | Ubuntu 20.04@sha256:80ef4a44043dec4490506e6cc4289eeda2d106a70148b74b5ae91ee670e9c35d |
 | 1804 | Ubuntu 18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 |

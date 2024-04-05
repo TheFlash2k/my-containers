@@ -60,8 +60,8 @@ if [[ "$VERSION" == "16.04" ]]; then
 	&& apt install -y python3.6 \
 	&& curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6
 else
-	pip install --upgrade \
-	pip \
+	pip3 install --upgrade \
+	pip3 \
 	setuptools \
 	setuptools-rust \
 	wheel
