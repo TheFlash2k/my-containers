@@ -13,7 +13,7 @@ dpkg --add-architecture i386 && \
 DEBIAN_FRONTEND=noninteractive \
 	TZ=GB apt install -y \
 	libc6:i386 \
-	libc6-dbg:i386
+	libc6-dbg:i386 \
 	libncurses5:i386 \
 	libstdc++6:i386 \
 	libedit-dev:i386 \
