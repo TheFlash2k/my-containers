@@ -37,8 +37,8 @@ echo "[*] Running $IMAGE version: $TAG"
 docker run \
 	-it \
 	--rm \
-	--name pwn-dev \
-	--hostname pwn-dev \
+	--name "pwn-dev-$TAG" \
+	--hostname "pwn-dev-$TAG" \
 	-v `pwd`:/chal \
 	--privileged \
 	"$IMAGE:$TAG"

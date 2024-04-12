@@ -4,7 +4,7 @@
 OVERRIDE_THEME="alanpeabody"      # zsh theme:
 ###################################
 
-set -ex
+set -x
 
 dpkg --add-architecture i386 && \
 	apt update
@@ -96,8 +96,16 @@ pip3 install \
 	angr \
 	IPython \
 	uncompyle6
-
-cat >> ~/.gdbinit <<EOF
+# Installing GDB plugins:
+if [[ "$VERSION" != "16.04" ]]; then
+	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
+	cd /opt/pwndbg
+	git checkout 2023.03.19
+	./setup.sh
+	git clone https://github.com/longld/peda.git /opt/peda
+	mkdir /opt/gef/
+	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
+	cat >> ~/.gdbinit <<EOF
 	define init-peda
 	source /opt/peda/peda.py
 	end
@@ -119,23 +127,12 @@ cat >> ~/.gdbinit <<EOF
 	# Default to pwndbg:
 	document init-pwndbg
 EOF
-
-tools=( "peda" "pwndbg" "gef" )
-for tool in ${tools[@]}; do
-	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
-	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
-	chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
-done
-
-# Installing GDB plugins:
-if [[ "$VERSION" != "16.04" ]]; then
-	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
-	cd /opt/pwndbg
-	git checkout 2023.03.19
-	./setup.sh
-	git clone https://github.com/longld/peda.git /opt/peda
-	mkdir /opt/gef/
-	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
+	tools=( "peda" "pwndbg" "gef" )
+	for tool in ${tools[@]}; do
+		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
+		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
+		chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
+	done
 else
 	# Install only pwndbg for 16.04:
 	wget -O /tmp/pwndbg.deb https://github.com/pwndbg/pwndbg/releases/download/2024.02.14/pwndbg_2024.02.14_amd64.deb
@@ -155,11 +152,10 @@ git clone https://github.com/gpakosz/.tmux.git && \
 	cp .tmux/.tmux.conf.local .
 sed -i "s/ZSH_THEME=\".*\"/ZSH_THEME=\"$OVERRIDE_THEME\"/g" /root/.zshrc
 
-# Installing other important tools:
 gem install \
 	heapinfo \
 	one_gadget \
-	seccomp-tools
+	seccomp-tools:1.5.0
 
 wget -O /usr/bin/pwninit https://github.com/io12/pwninit/releases/download/3.3.1/pwninit
 chmod +x /usr/bin/pwninit
