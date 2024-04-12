@@ -42,6 +42,8 @@ DEBIAN_FRONTEND=noninteractive \
 	cmake \
 	autoconf \
 	file \
+	ruby \
+	ruby-dev \
 	g++-multilib \
 	gcc-multilib \
 	curl \
@@ -56,16 +58,16 @@ DEBIAN_FRONTEND=noninteractive \
 	nano \
 	zsh
 
-# Install ruby:
-git clone https://github.com/postmodern/ruby-install /opt/ruby-install
-cd /opt/ruby-install
-make install
-ruby-install ruby 3.0.0
-_path="/opt/rubies/ruby-3.0.0/bin"
-for i in $(ls "$_path"); do ln -sf "$_path/$i" "/usr/bin/$i"; done
-
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then
+	# Install ruby if UBUNTU 16:
+	git clone https://github.com/postmodern/ruby-install /opt/ruby-install
+	cd /opt/ruby-install
+	make install
+	ruby-install ruby 3.0.0
+	_path="/opt/rubies/ruby-3.0.0/bin"
+	for i in $(ls "$_path"); do ln -sf "$_path/$i" "/usr/bin/$i"; done
+
 	apt install -y software-properties-common && \
 	add-apt-repository -y ppa:jblgf0/python \
 	&& apt clean -y \
