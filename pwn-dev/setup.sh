@@ -78,17 +78,7 @@ pip3 install \
 	IPython \
 	uncompyle6
 
-# Installing GDB plugins:
-if [[ "$VERSION" != "16.04" ]]; then
-	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
-	cd /opt/pwndbg
-	git checkout 2023.03.19
-	./setup.sh
-	git clone https://github.com/longld/peda.git /opt/peda
-	mkdir /opt/gef/
-	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
-
-	cat >> ~/.gdbinit <<EOF
+cat >> ~/.gdbinit <<EOF
 	define init-peda
 	source /opt/peda/peda.py
 	end
@@ -109,19 +99,30 @@ if [[ "$VERSION" != "16.04" ]]; then
 	end
 	# Default to pwndbg:
 	document init-pwndbg
-	EOF
+EOF
 
-	tools=( "peda" "pwndbg" "gef" )
-	for tool in ${tools[@]}; do
-		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
-		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
-		chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
-	done
+tools=( "peda" "pwndbg" "gef" )
+for tool in ${tools[@]}; do
+	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
+	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
+	chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
+done
+
+# Installing GDB plugins:
+if [[ "$VERSION" != "16.04" ]]; then
+	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
+	cd /opt/pwndbg
+	git checkout 2023.03.19
+	./setup.sh
+	git clone https://github.com/longld/peda.git /opt/peda
+	mkdir /opt/gef/
+	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
 else
 	# Install only pwndbg for 16.04:
 	wget -O /tmp/pwndbg.deb https://github.com/pwndbg/pwndbg/releases/download/2024.02.14/pwndbg_2024.02.14_amd64.deb
 	dpkg -i /tmp/pwndbg.deb
 	rm -f /tmp/pwndbg.deb
+	cp /usr/bin/pwndbg /usr/bin/gdb-pwndbg
 fi
 
 # Installing shit for aesthetics ;-;
