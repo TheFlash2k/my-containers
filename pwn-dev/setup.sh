@@ -79,43 +79,50 @@ pip3 install \
 	uncompyle6
 
 # Installing GDB plugins:
-git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
-cd /opt/pwndbg
-git checkout 2023.03.19
-./setup.sh
-git clone https://github.com/longld/peda.git /opt/peda
-mkdir /opt/gef/
-wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
+if [[ "$VERSION" != "16.04" ]]; then
+	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
+	cd /opt/pwndbg
+	git checkout 2023.03.19
+	./setup.sh
+	git clone https://github.com/longld/peda.git /opt/peda
+	mkdir /opt/gef/
+	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
 
-cat >> ~/.gdbinit <<EOF
-define init-peda
-source /opt/peda/peda.py
-end
-document init-peda
-Initializes the PEDA (Python Exploit Development Assistant for GDB) framework
-end
-define init-pwndbg
-source /opt/pwndbg/gdbinit.py
-end
-document init-pwndbg
-Initializes PwnDBG
-end
-define init-gef
-source /opt/gef/gef.py
-end
-document init-gef
-Initializes GEF (GDB Enhanced Features)
-end
-# Default to pwndbg:
-document init-pwndbg
-EOF
+	cat >> ~/.gdbinit <<EOF
+	define init-peda
+	source /opt/peda/peda.py
+	end
+	document init-peda
+	Initializes the PEDA (Python Exploit Development Assistant for GDB) framework
+	end
+	define init-pwndbg
+	source /opt/pwndbg/gdbinit.py
+	end
+	document init-pwndbg
+	Initializes PwnDBG
+	end
+	define init-gef
+	source /opt/gef/gef.py
+	end
+	document init-gef
+	Initializes GEF (GDB Enhanced Features)
+	end
+	# Default to pwndbg:
+	document init-pwndbg
+	EOF
 
-tools=( "peda" "pwndbg" "gef" )
-for tool in ${tools[@]}; do
-	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
-	echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
-	chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
-done
+	tools=( "peda" "pwndbg" "gef" )
+	for tool in ${tools[@]}; do
+		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/gdb-$tool
+		echo "exec gdb -q -ex init-$tool \"\$@\"" | tee /usr/bin/$tool
+		chmod +x /usr/bin/gdb-$tool /usr/bin/$tool
+	done
+else
+	# Install only pwndbg for 16.04:
+	wget -O /tmp/pwndbg.deb https://github.com/pwndbg/pwndbg/releases/download/2024.02.14/pwndbg_2024.02.14_amd64.deb
+	dpkg -i /tmp/pwndbg.deb
+	rm -f /tmp/pwndbg.deb
+fi
 
 # Installing shit for aesthetics ;-;
 chsh -s /usr/bin/zsh && \
