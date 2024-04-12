@@ -32,6 +32,7 @@ DEBIAN_FRONTEND=noninteractive \
 	ltrace \
 	nasm \
 	unzip \
+	man-db \
 	p7zip-full \
 	cmake \
 	autoconf \
@@ -55,7 +56,10 @@ DEBIAN_FRONTEND=noninteractive \
 if [[ "$VERSION" == "16.04" ]]; then 
 	apt install -y software-properties-common && \
 	add-apt-repository -y ppa:jblgf0/python \
-	&& apt purge -y python3 python3-pip \
+	&& apt clean -y \
+	&& apt autoremove -y \
+	&& apt remove -y python3 python3-pip ruby ruby-dev \
+	&& apt autoremove -y \
 	&& apt update \
 	&& apt install -y python3.6 \
 	&& curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6
@@ -122,7 +126,16 @@ else
 	wget -O /tmp/pwndbg.deb https://github.com/pwndbg/pwndbg/releases/download/2024.02.14/pwndbg_2024.02.14_amd64.deb
 	dpkg -i /tmp/pwndbg.deb
 	rm -f /tmp/pwndbg.deb
-	cp /usr/bin/pwndbg /usr/bin/gdb-pwndbg
+	cp /usr/bin/pwndbg /usr/bin/gdb
+	sed -i 's/dir=.*/dir=\/usr\/lib\/pwndbg/g' /usr/bin/gdb
+
+	# Install ruby:
+	git clone https://github.com/postmodern/ruby-install /opt/ruby-install
+	cd /opt/ruby-install
+	make install
+	ruby-install ruby 3.0.0
+	_path="/opt/rubies/ruby-3.0.0/bin"
+	for i in $(ls "$_path"); do ln -sf "$_path/$i" "/usr/bin/$i"; done
 fi
 
 # Installing shit for aesthetics ;-;
@@ -134,12 +147,10 @@ git clone https://github.com/gpakosz/.tmux.git && \
 	cp .tmux/.tmux.conf.local .
 
 # Installing other important tools:
-if [[ "$VERSION" != "16.04" ]]; then
 	gem install \
 		heapinfo \
 		one_gadget \
 		seccomp-tools:1.5.0
-fi
 
 wget -O /usr/bin/pwninit https://github.com/io12/pwninit/releases/download/3.3.1/pwninit
 chmod +x /usr/bin/pwninit
