@@ -40,7 +40,7 @@ DEBIAN_FRONTEND=noninteractive \
 	man-db \
 	net-tools \
 	iputils-ping \
-	netcat \
+	netcat-traditional \
 	socat \
 	p7zip-full \
 	cmake \
