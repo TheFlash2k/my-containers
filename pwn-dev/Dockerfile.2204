@@ -6,6 +6,9 @@ ENV LANG en_us.utf8
 
 WORKDIR /root
 
+COPY utils/ /usr/bin
+COPY Templates /root/
+
 COPY setup.sh /
 RUN /setup.sh
 

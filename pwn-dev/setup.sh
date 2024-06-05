@@ -66,6 +66,7 @@ DEBIAN_FRONTEND=noninteractive \
 
 wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
 apt install -y /tmp/bat.deb
+rm /tmp/bat.deb
 
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then

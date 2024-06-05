@@ -8,7 +8,7 @@ ENV PATH="$PATH:/opt/rubies/ruby-3.0.0/bin"
 WORKDIR /root
 
 COPY utils/ /usr/bin
-COPY Templates /
+COPY Templates /root/
 
 COPY setup.sh /
 RUN /setup.sh
