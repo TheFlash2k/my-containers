@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+from sys import argv
+
+if len(argv) < 2:
+	print(f"Usage: {argv[0]} <string to convert to Little Endian Hex>\nNOTE: It will in pair of 8")
+	exit(1)
+
+def str2lehex(_str: str):
+	def to_hex(chunk: str):
+		chunk = chunk[::-1]
+		return '0x' + ''.join([hex(ord(i))[2:] for i in chunk])
+
+	mod = lambda a, b: a % b if a >= b else b % a
+	chunkify = lambda lst, n: [lst[i:i + n] for i in range(0, len(lst), n)]
+
+	prefix_padding = "/"
+	data = _str
+
+	_str = (prefix_padding * mod(len(data), 8)) + data
+	_str = chunkify(_str, 8)[::-1]
+
+	rt = []
+	for i in _str:
+		rt.append(to_hex(i))
+	return rt
+
+data = ' '.join(argv[1:])
+lestr = str2lehex(data)
+
+for i in lestr:
+	print(i)

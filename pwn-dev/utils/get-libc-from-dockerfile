@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# Logging Functions
+function log()     { echo -e "\e[32m[*]\e[0m $@"; }
+function error()   { echo -e "\e[31m[!]\e[0m $@"; exit 1; }
+function warn()   { echo -e "\e[33m[x]\e[0m $@"; }
+function msg()     { echo -e "\e[34m[+]\e[0m $@"; }
+function msgln()     { echo -en "\e[34m[+]\e[0m $@"; }
+
+# modifiable vars ##
+
+# Run pwninit after extraction:
+# 1=Yes
+# 0=No
+PWNINIT=1
+
+# Delete the image after extraction
+# 1=Yes
+# 0=No
+DELETE=1 
+
+# Name of the image that will be created
+IMAGE_NAME="temp_challenge"
+
+# Name of the running container
+CONTAINER_NAME="temp"
+
+# Name and path of the output file:
+OUT_FILE="$(pwd)/libc.so.6"
+
+# Optional: You can specify the path to libc inside the docker container:
+LIBC_PATH=""
+
+
+if [[ $# != 1 ]]; then
+	error "Usage: $0 <Dockerfile>"
+	exit 1
+fi
+
+file="$1"
+
+[ ! -f "$file" ] &&  error "$1 is not a valid file. Please check."
+
+# precautionary measure
+(docker ps | grep "$CONTAINER_NAME") 2>&1 >/dev/null
+if [[ $? == 0 ]]; then
+	warn "Found a container running with name $CONTAINER_NAME. Stopping it before continuing"
+	docker stop "$CONTAINER_NAME" 2>&1 >/dev/null
+fi
+
+# Extract `FROM` statement, and creating another file with only the IMAGE, and a `sleep` entrypoint:
+# Only get the first result.
+from=$(cat "$file" | grep -i "^FROM" | cut -d $'\n' -f1)
+
+img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*):[^ \n]+)'`
+msg "Extracted Image from \"$file\": $img_name"
+
+# Delete the temp file if already exists.
+tmp_dir=$(mktemp -d)
+tmp_file=$(mktemp "$tmp_dir/temp_Docker_XXX")
+
+[ -f "$tmp_file" ] && rm -f "$tmp_file"
+
+echo "FROM $img_name" > "$tmp_file"
+echo 'ENTRYPOINT ["sleep", "1000"]' >> "$tmp_file"
+
+log "Wrote temporary Dockerfile: $tmp_file"
+log "Building image $IMAGE_NAME."
+docker build -f "$tmp_file" -t "$IMAGE_NAME" . 2>&1 >/dev/null
+
+log "Built image with name: $IMAGE_NAME"
+
+_id=$(docker run -d --rm --name "$CONTAINER_NAME" "$IMAGE_NAME")
+
+msg "Ran container ($CONTAINER_NAME) with id $_id"
+
+libc=""
+if [ ! -z "$LIBC_PATH" ]; then
+	# check if it's a valid file in the container
+	docker exec -it $_id "ls -l $LIBC_PATH" 2>&1 >/dev/null
+	[[ $? != 0 ]] && error "$LIBC_PATH is an invalid path. Please check."
+	libc="$LIBC_PATH"
+fi
+
+if [ -z "$libc" ]; then
+	path=$(docker exec -it "$CONTAINER_NAME" sh -c 'find / -name libc.so.6 -exec realpath {} \; 2>/dev/null')
+	[[ $? != 0 && $? != 1 ]] && error "Unable to extract libc path. Possible error: $path"
+
+	libc=`echo "${path%?}" | tail -1`
+fi
+
+msg "Found libc at $libc"
+
+docker cp "$_id":"$libc" "$OUT_FILE" 2>&1 >/dev/null
+[[ $? != 0 ]] && warn "Unable to copy libc from the container :(" || msg "Copied libc from \"$libc\" to \"$OUT_FILE\""
+
+log "Cleaning up...."
+docker stop "$CONTAINER_NAME" 2>&1 >/dev/null
+msg "Stopped ($CONTAINER_NAME) $_id"
+
+if [[ $DELETE != 0 ]]; then
+	docker rmi "$IMAGE_NAME" 2>&1 >/dev/null
+	[[ $? != 0 ]] && error "Unable to delete $IMAGE_NAME"
+	msg "Deleted $IMAGE_NAME"
+fi
+
+shopt -s nocasematch # case insensitive matching
+
+# old-testing. Keeping for legacy ;-;
+# msgln "Do you want to run pwninit in `pwd` as well? (Y/N) "
+# read runinit
+
+[[ "$PWNINIT" -eq 1 ]] && runinit="y" || runinit="n"
+
+patcher="pwninit"
+if [[ "$runinit" == "y" ]]; then
+	msg "Running $patcher in `pwd`"
+	command -v "$patcher" 2>&1 >/dev/null
+	[[ $? != 0 ]] && error "$patcher not found in PATH. Please check."
+	"$patcher"
+	[[ $? != 0 ]] && error "An error occurred when running $patcher."
+else
+	log "Done with extraction."
+fi

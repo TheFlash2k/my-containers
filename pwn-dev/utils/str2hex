@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ $# != 1 ]]; then
+	echo "Usage: $0 <string>"
+	exit 1
+fi
+
+function endian() {
+	if [[ -z $1 ]]; then echo "No input supplied."; exit 1; fi
+	v=$1
+	i=${#v}
+	while [ $i -gt 0 ]; do
+		i=$[$i-2]
+		echo -n ${v:$i:2}
+	done
+}
+
+_hex=$(echo -n "$1" | od -A n -t x1 | tr -d " ")
+_little=$(endian $_hex)
+
+echo "String: $1"
+echo "Base: $_hex"
+echo "Little endian: $_little"
