@@ -109,7 +109,7 @@ else
 fi
 
 # Installing python-based tools:
-pip3 install --no-cache-dir "$PIP_ARGS" \
+pip3 install --no-cache-dir $PIP_ARGS \
 	argparse \
 	pwntools \
 	prompt_toolkit \
