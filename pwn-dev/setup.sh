@@ -61,7 +61,9 @@ DEBIAN_FRONTEND=noninteractive \
 	tmux \
 	nano \
 	rpm2cpio cpio \
-	qemu \
+	qemu-system \
+	qemu-user \
+	qemu-user-static \
 	zsh
 
 wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
@@ -113,7 +115,7 @@ pip3 install --no-cache-dir \
     r2pipe
 
 # Installing GDB plugins:
-git clone https://github.com/scwuaptx/Pwngdb /opt/Pwngdb
+git clone https://github.com/TheFlash2k/Pwngdb /opt/Pwngdb
 if [[ "$VERSION" != "16.04" ]]; then
 	git clone https://github.com/pwndbg/pwndbg /opt/pwndbg
 	cd /opt/pwndbg
@@ -145,6 +147,7 @@ if [[ "$VERSION" != "16.04" ]]; then
 	document init-pwndbg
 
 	# Add the PWNGDB Heap Info stuff:
+	source /opt/Pwngdb/pwngdb.py
 	source /opt/Pwngdb/angelheap/gdbinit.py
 	define hook-run
 	python
@@ -166,6 +169,8 @@ else
 	rm -f /tmp/pwndbg.deb
 	cp /usr/bin/pwndbg /usr/bin/gdb
 	sed -i 's/dir=.*/dir=\/usr\/lib\/pwndbg/g' /usr/bin/gdb
+	cp /opt/Pwngdb/.gdbinit /root/
+
 fi
 
 # Installing shit for aesthetics ;-;
@@ -208,7 +213,6 @@ mv ./bin/rappel /usr/bin/rappel-x86
 
 # Installing my exploit templates:
 # Base64 might look sus but it was the most easiest way for me:
-mkdir -p /root/Templates
 ln -sf /root/Templates/generate.py /usr/bin/fmt-generator
 
 echo -n "IyEvYmluL2Jhc2gKCmNwIH4vVGVtcGxhdGVzL2V4cGxvaXQucHkgZXhwbG9pdC5weQo=" | base64 -d > /usr/bin/get-exploit

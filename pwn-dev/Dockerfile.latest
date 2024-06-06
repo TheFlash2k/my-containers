@@ -6,7 +6,7 @@ ENV LC_CTYPE=C.UTF-8
 WORKDIR /root
 
 COPY utils/ /usr/bin
-COPY Templates /root/
+COPY Templates/ /root/Templates
 
 COPY setup.sh /
 RUN /setup.sh
