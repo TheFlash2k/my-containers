@@ -24,6 +24,8 @@ DEBIAN_FRONTEND=noninteractive \
 	zlib1g-dev \
 	libcapstone-dev \
 	libseccomp-dev \
+	libpython-dev \
+	libpython3-dev \
 	libssl-dev \
 	libffi-dev \
 	ruby-dev \
@@ -55,6 +57,7 @@ DEBIAN_FRONTEND=noninteractive \
 	git \
 	patchelf \
 	gdb \
+	gdb-multiarch \
 	dos2unix \
 	elfutils \
 	binutils-* \
@@ -70,8 +73,15 @@ wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v0.24.0/ba
 apt install -y /tmp/bat.deb
 rm /tmp/bat.deb
 
+# Set the --break-system-packages if VERSION >= 22.04
+if [[ "$VERSION" == "22.04" || "$VERSION" == "23.04" ]]; then
+	PIP_ARGS="--break-system-packages"
+fi
+
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then
+	DEBIAN_FRONTEND=noninteractive \
+	TZ=GB apt install -y libpython3.6-dev\
 	# Install ruby if UBUNTU 16:
 	git clone https://github.com/postmodern/ruby-install /opt/ruby-install
 	cd /opt/ruby-install
@@ -99,7 +109,7 @@ else
 fi
 
 # Installing python-based tools:
-pip3 install --no-cache-dir \
+pip3 install --no-cache-dir "$PIP_ARGS" \
 	argparse \
 	pwntools \
 	prompt_toolkit \
@@ -112,7 +122,8 @@ pip3 install --no-cache-dir \
     smmap2 \
     apscheduler \
     pebble \
-    r2pipe
+    r2pipe \
+	crccheck
 
 # Installing GDB plugins:
 git clone https://github.com/TheFlash2k/Pwngdb /opt/Pwngdb
@@ -122,8 +133,6 @@ if [[ "$VERSION" != "16.04" ]]; then
 	git checkout 2023.03.19
 	./setup.sh
 	git clone https://github.com/longld/peda.git /opt/peda
-	mkdir /opt/gef/
-	wget -O /opt/gef/gef.py https://github.com/hugsy/gef/raw/main/gef.py
 	cat >> ~/.gdbinit <<EOF
 	define init-peda
 	source /opt/peda/peda.py
@@ -138,7 +147,7 @@ if [[ "$VERSION" != "16.04" ]]; then
 	Initializes PwnDBG
 	end
 	define init-gef
-	source /opt/gef/gef.py
+	source /root/.gdbinit-gef.py
 	end
 	document init-gef
 	Initializes GEF (GDB Enhanced Features)
@@ -172,6 +181,16 @@ else
 	cp /opt/Pwngdb/.gdbinit /root/
 
 fi
+
+# Install bata23 gef
+git clone https://github.com/bata24/gef /opt/gef
+wget -q https://github.com/0vercl0k/rp/releases/download/v2.1.3/rp-lin-clang.zip -P /tmp
+unzip /tmp/rp-lin-clang.zip -d /usr/local/bin/
+chmod +x /usr/local/bin/rp-lin
+rm /tmp/rp-lin-clang.zip
+pip3 install $PIP_ARGS --upgrade lz4 zstandard git+https://github.com/clubby789/python-lzo@b4e39df
+pip3 install $PIP_ARGS --upgrade git+https://github.com/marin-m/vmlinux-to-elf
+wget -q https://raw.githubusercontent.com/bata24/gef/dev/gef.py -O /root/.gdbinit-gef.py
 
 # Installing shit for aesthetics ;-;
 chsh -s /usr/bin/zsh && \

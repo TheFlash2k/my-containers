@@ -16,4 +16,4 @@ RUN /setup.sh
 RUN mkdir -p /chal
 WORKDIR /chal
 
-ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "/usr/bin/zsh" ]
