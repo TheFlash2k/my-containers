@@ -13,7 +13,7 @@ function usage() {
 
 IMAGE="theflash2k/pwn-dev"
 DEFAULT="latest"
-AVAILABLE=( "latest" "2304" "2204" "2004" "1804" "1604")
+AVAILABLE=("latest" "2304" "2204" "2004" "1804" "1604")
 
 TAG=""
 if [[ $# -ne 1 ]]; then
@@ -39,6 +39,14 @@ docker run \
 	--rm \
 	--name "pwn-dev-$TAG" \
 	--hostname "pwn-dev-$TAG" \
+	--device=/dev/kvm \
+	--network host \
+	--ipc=host \
+	--cap-add sys_ptrace \
+	--security-opt seccomp=unconfined \
+	--env "DISPLAY=$DISPLAY" \
+	--env "_X11_NO_MITSHM=1" \
+	-v /tmp/.X11-unix:/tmp.X11-unix \
 	-v `pwd`:/chal \
 	--privileged \
 	"$IMAGE:$TAG"
