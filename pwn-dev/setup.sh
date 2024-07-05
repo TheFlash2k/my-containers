@@ -9,11 +9,17 @@ set -x
 dpkg --add-architecture i386 && \
 	apt update
 
+if [[ "$VERSION" == "24.04" ]]; then
+	ncurses="libncurses6"
+else
+	ncurses="libncurses5"
+fi
+
 # Installing LIBS
 DEBIAN_FRONTEND=noninteractive \
 	TZ=GB apt install -y \
-	libc6:i386 libc6-dbg:i386 libncurses5:i386 libstdc++6:i386 libedit-dev:i386 libseccomp-dev:i386 \
-	libncurses5 libbrlapi-dev libntirpc-dev libpam0g-dev liblzma-dev liblzo2-dev libedit-dev \
+	libc6:i386 libc6-dbg:i386 libstdc++6:i386 libedit-dev:i386 libseccomp-dev:i386 "$ncurses:i386" \
+	"$ncurses" libbrlapi-dev libntirpc-dev libpam0g-dev liblzma-dev liblzo2-dev libedit-dev \
 	libc6-dbg libcapstone-dev libseccomp-dev libpython3-dev libssl-dev libffi-dev libsqlite3-dev \
 	ruby-dev zlib1g-dev gcc g++ build-essential python3 python3-pip strace ltrace nasm yasm \
 	unzip man-db net-tools iputils-ping netcat-traditional socat p7zip-full cmake autoconf \
@@ -34,7 +40,7 @@ DEBIAN_FRONTEND=noninteractive \
 	g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
 
 # Set the --break-system-packages if VERSION >= 23.04
-[[ "$VERSION" == "23.04" ]] && PIP_ARGS="--break-system-packages"
+[[ "$VERSION" == "23.04" || "$VERSION" == "24.04" ]] && PIP_ARGS="--break-system-packages"
 
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then
@@ -57,7 +63,7 @@ if [[ "$VERSION" == "16.04" ]]; then
 	&& curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6 \
 	&& ln -sf /usr/bin/python3.6 /usr/bin/python3
 else
-	pip3 install --upgrade --no-cache-dir $PIP_ARGS \
+	pip install --upgrade --no-cache-dir $PIP_ARGS \
 	pip \
 	setuptools \
 	setuptools-rust \

@@ -1,5 +1,5 @@
 BASE_IMG = theflash2k/pwn-dev
-VERSIONS = latest 2304 2204 2004 1804 1604
+VERSIONS = latest 2404 2304 2204 2004 1804 1604
 
 .PHONY: all
 all: $(VERSIONS)
