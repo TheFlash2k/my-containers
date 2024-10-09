@@ -1,0 +1,27 @@
+#!/bin/bash
+
+[[ -z "$1" ]] && (echo -e "No binary specified.\nUsage: $0 <binary>" && exit 1)
+
+# some bash fu.
+OUT_FILE="$1_gadgets.txt"
+
+ROPgadget --binary $1 > "$OUT_FILE"
+echo "[*] Gadgets stored in $OUT_FILE"
+
+found="$( cat "$OUT_FILE" | grep \
+	-ie '.* : pop ... ; ret$' \
+	-ie '.* : ret$' \
+	-ie '.* : syscall$' \
+	-ie '.* : pop rdx ; pop .* ; ret$' \
+	-ie '.* : xor ..., ... ; syscall$' \
+	| tr -d ' ' | tr $'\n' ' ')"
+
+# echo "$found"
+
+for ln in $found; do
+	# 0x0000000000400773:poprdi;ret
+	# :[0] => addr, :[1].split(';')[0].upper() => var
+	addr=`echo $ln | cut -d ':' -f1`
+	var=`echo $ln | cut -d ':' -f2 | tr ';' '_'`
+	echo "${var^^} = $addr"
+done

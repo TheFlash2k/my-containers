@@ -52,7 +52,7 @@ fi
 # Only get the first result.
 from=$(cat "$file" | grep -i "^FROM" | cut -d $'\n' -f1)
 
-img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*):[^ \n]+)'`
+img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*|python.*):[^ \n]+)'`
 msg "Extracted Image from \"$file\": $img_name"
 
 # Delete the temp file if already exists.
@@ -110,6 +110,7 @@ shopt -s nocasematch # case insensitive matching
 # msgln "Do you want to run pwninit in `pwd` as well? (Y/N) "
 # read runinit
 
+
 [[ "$PWNINIT" -eq 1 ]] && runinit="y" || runinit="n"
 
 patcher="pwninit"
@@ -117,7 +118,7 @@ if [[ "$runinit" == "y" ]]; then
 	msg "Running $patcher in `pwd`"
 	command -v "$patcher" 2>&1 >/dev/null
 	[[ $? != 0 ]] && error "$patcher not found in PATH. Please check."
-	"$patcher"
+	"$patcher" --no-template
 	[[ $? != 0 ]] && error "An error occurred when running $patcher."
 else
 	log "Done with extraction."

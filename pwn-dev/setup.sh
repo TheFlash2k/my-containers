@@ -26,7 +26,7 @@ DEBIAN_FRONTEND=noninteractive \
 	file ruby ruby-dev g++-multilib gcc-multilib curl wget git patchelf gdb gdb-multiarch \
 	dos2unix elfutils binutils-* tmux nano rpm2cpio cpio qemu-system qemu-user qemu-user-static \
 	qemu-kvm libc6-arm64-cross libc6-dbg-arm64-cross libc6-armhf-cross libc6-dbg-armhf-cross \
-	autoconf automake libtool flex bison zsh
+	autoconf automake libtool flex bison zsh vim
 
 wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
 DEBIAN_FRONTEND=noninteractive \
