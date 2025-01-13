@@ -2,42 +2,49 @@
 
 ##### Modifiable variables ########
 OVERRIDE_THEME="alanpeabody"      # zsh theme:
+BAT_VER="0.25.0" # batcat version
 ###################################
 
 set -x
 
-dpkg --add-architecture i386 && \
+ARCH=`uname -p`
+_32_BIT=""
+_64_BIT=""
+[[ "$ARCH" == "aarch64" ]] && _32_BIT="armhf" || _32_BIT="i386"
+[[ "$ARCH" == "aarch64" ]] && _64_BIT="arm64" || _64_BIT="amd64"
+
+dpkg --add-architecture "$_32_BIT" && \
 	apt update
 
-if [[ "$VERSION" == "24.04" ]]; then
-	ncurses="libncurses6"
-else
-	ncurses="libncurses5"
-fi
+[[ "$VERSION" == "24.04" ]] && ncurses="libncurses6" || ncurses="libncurses6"
 
 # Installing LIBS
 DEBIAN_FRONTEND=noninteractive \
 	TZ=GB apt install -y \
-	libc6:i386 libc6-dbg:i386 libstdc++6:i386 libedit-dev:i386 libseccomp-dev:i386 "$ncurses:i386" \
+	libc6:$_32_BIT libc6-dbg:$_32_BIT libstdc++6:$_32_BIT libedit-dev:$_32_BIT libseccomp-dev:$_32_BIT "$ncurses:$_32_BIT" \
 	"$ncurses" libbrlapi-dev libntirpc-dev libpam0g-dev liblzma-dev liblzo2-dev libedit-dev \
 	libc6-dbg libcapstone-dev libseccomp-dev libpython3-dev libssl-dev libffi-dev libsqlite3-dev \
 	ruby-dev zlib1g-dev gcc g++ build-essential python3 python3-pip strace ltrace nasm yasm \
 	unzip man-db net-tools iputils-ping netcat-traditional socat p7zip-full cmake autoconf \
-	file ruby ruby-dev g++-multilib gcc-multilib curl wget git patchelf gdb gdb-multiarch \
+	file ruby ruby-dev g++-multilib* gcc-multilib* curl wget git patchelf gdb gdb-multiarch \
 	dos2unix elfutils binutils-* tmux nano rpm2cpio cpio qemu-system qemu-user qemu-user-static \
-	qemu-kvm libc6-arm64-cross libc6-dbg-arm64-cross libc6-armhf-cross libc6-dbg-armhf-cross \
-	autoconf automake libtool flex bison zsh vim
+	qemu-kvm libc6-$_64_BIT-cross libc6-dbg-$_64_BIT-cross libc6-$_32_BIT-cross libc6-dbg-$_32_BIT-cross \
+	autoconf automake libtool flex bison zsh vim pkg-config libdwarf-dev libelf-dev libiberty-dev linux-headers-generic
 
-wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
+[[ "$ARCH" == "aarch64" ]] && _ARCH="arm64" || _ARCH="amd64"
+wget -O /tmp/bat.deb https://github.com/sharkdp/bat/releases/download/v$BAT_VER/bat_$BAT_VER\_$_ARCH.deb
+
 DEBIAN_FRONTEND=noninteractive \
 	TZ=GB apt install -y \
 	/tmp/bat.deb
 
-DEBIAN_FRONTEND=noninteractive \
-	TZ=GB apt install -y \
-	libstdc++6-arm64-cross libstdc++6-armhf-cross \
-	gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
-	g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+if [[ "$ARCH" != "aarch64" ]]; then
+	DEBIAN_FRONTEND=noninteractive \
+		TZ=GB apt install -y \
+		libstdc++6-arm64-cross libstdc++6-armhf-cross \
+		gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf \
+		g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+fi
 
 # Set the --break-system-packages if VERSION >= 23.04
 [[ "$VERSION" == "23.04" || "$VERSION" == "24.04" ]] && PIP_ARGS="--break-system-packages"
@@ -67,14 +74,14 @@ else
 	pip \
 	setuptools \
 	setuptools-rust \
-	wheel
+	wheel || true
 fi
 
 # Installing python-based tools:
 pip3 install --upgrade --no-cache-dir $PIP_ARGS \
 	cmake argparse pwntools prompt_toolkit ropper \
 	ROPGadget angr IPython uncompyle6 z3-solver smmap2 \
-	apscheduler pebble r2pipe crccheck
+	apscheduler pebble r2pipe crccheck tqdm ptrlib libdebug
 
 # Installing GDB plugins:
 git clone https://github.com/TheFlash2k/Pwngdb /opt/Pwngdb
@@ -93,7 +100,14 @@ else
 	sed -i 's/dir=.*/dir=\/usr\/lib\/pwndbg/g' /usr/bin/gdb
 fi
 
-cat >> ~/.gdbinit <<EOF
+# Tools for kernel debugging
+git clone https://github.com/martinradev/gdb-pt-dump /opt/pt-dump
+git clone https://github.com/PaoloMonti42/salt /opt/salt
+git clone https://github.com/nccgroup/libslub /opt/libslub
+cd /opt/libslub
+pip3 install --no-cache-dir $PIP_ARGS -r requirements.txt
+
+cat > ~/.gdbinit <<EOF
 define init-peda
 	source /opt/peda/peda.py
 end
@@ -115,9 +129,11 @@ document init-gef
 	Initializes GEF (GDB Enhanced Features)
 end
 
-# Add the PWNGDB Heap Info stuff:
+# Load custom modules
 source /opt/Pwngdb/pwngdb.py
 source /opt/Pwngdb/angelheap/gdbinit.py
+source /opt/pt-dump/pt.py
+
 define hook-run
 python
 import angelheap
@@ -161,6 +177,7 @@ else
 	chmod u+x ./build-release.sh && ./build-release.sh
 	mv /opt/rp/src/build/rp-lin /usr/bin/rp++
 	cp /usr/bin/rp++ /usr/bin/rp-lin
+	cp /usr/bin/rp++ /usr/bin/rp
 	cd /opt && rm -rf /opt/rp
 fi
 
@@ -189,14 +206,29 @@ if [[ "$VERSION" != "16.04" ]]; then
 fi
 sed -i "s/ZSH_THEME=\".*\"/ZSH_THEME=\"$OVERRIDE_THEME\"/g" /root/.zshrc
 
+[[ "$VERSION" == "16.04" ]] && $SECCOMP_VER=":1.5.0."
+
 gem install \
 	heapinfo \
 	one_gadget \
-	seccomp-tools:1.5.0
+	seccomp-tools$SECCOMP_VER
 
-wget -O /usr/bin/pwninit \
-	https://github.com/io12/pwninit/releases/download/3.3.1/pwninit
-chmod +x /usr/bin/pwninit
+cargo install pwninit
+
+# install new tools
+git clone https://github.com/zolutal/kropr /opt/kropr
+cd /opt/ckropr && ./install.sh
+cd /opt && rm -rf /opt/kropr
+
+git clone https://github.com/zolutal/rcpio /opt/rcpio
+cd /opt/rcpio
+cargo install --path . --root /tmp
+mv /tmp/bin/rcpio ~/.cargo/bin/rcpio
+cd /opt && rm -rf /tmp/bin /opt/rcpio
+
+git clone https://github.com/zolutal/pwn_gadget && \
+pip install --no-cache-dir $PIP_ARGS pwn_gadget/ && \
+echo "source /opt/pwn_gadget/pwn_gadget.py" >> ~/.gdbinit
 
 echo "CTF{F4k3_fl4g_f0r_t3sting}" > /flag
 cp /flag /flag.txt
@@ -210,13 +242,14 @@ cd /opt/rappel
 make
 mv ./bin/rappel /usr/bin/
 make clean
-ARCH=x86 make
-mv ./bin/rappel /usr/bin/rappel-x86
 
-# Setup ARM stuff:
-mkdir /etc/qemu-binfmt
-ln -s /usr/aarch64-linux-gnu /etc/qemu-binfmt/aarch64 
-ln -s /usr/arm-linux-gnueabihf /etc/qemu-binfmt/arm
+if [[ "$ARCH" != "aarch64" ]]; then
+	ARCH=x86 make
+	mv ./bin/rappel /usr/bin/rappel-x86
+	mkdir /etc/qemu-binfmt
+	ln -s /usr/aarch64-linux-gnu /etc/qemu-binfmt/aarch64 
+	ln -s /usr/arm-linux-gnueabihf /etc/qemu-binfmt/arm
+fi
 
 # Custom aliases:
 ## Fix the permissions of file from root to 1000:1000
