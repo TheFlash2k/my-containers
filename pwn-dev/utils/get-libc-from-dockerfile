@@ -31,14 +31,8 @@ OUT_FILE="$(pwd)/libc.so.6"
 # Optional: You can specify the path to libc inside the docker container:
 LIBC_PATH=""
 
-
-if [[ $# != 1 ]]; then
-	error "Usage: $0 <Dockerfile>"
-	exit 1
-fi
-
-file="$1"
-
+file="Dockerfile"
+[[ $# == 1 ]] && file="$1"
 [ ! -f "$file" ] &&  error "$1 is not a valid file. Please check."
 
 # precautionary measure
@@ -52,7 +46,7 @@ fi
 # Only get the first result.
 from=$(cat "$file" | grep -i "^FROM" | cut -d $'\n' -f1)
 
-img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*|python.*):[^ \n]+)'`
+img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*|python.*|nsjail.*|livectf_base.*|base.*):[^ \n]+)'`
 msg "Extracted Image from \"$file\": $img_name"
 
 # Delete the temp file if already exists.
@@ -105,11 +99,6 @@ if [[ $DELETE != 0 ]]; then
 fi
 
 shopt -s nocasematch # case insensitive matching
-
-# old-testing. Keeping for legacy ;-;
-# msgln "Do you want to run pwninit in `pwd` as well? (Y/N) "
-# read runinit
-
 
 [[ "$PWNINIT" -eq 1 ]] && runinit="y" || runinit="n"
 

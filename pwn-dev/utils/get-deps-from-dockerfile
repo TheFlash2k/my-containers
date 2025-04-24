@@ -1,0 +1,199 @@
+#!/bin/bash
+
+# You can change these if you want to:
+patchers=("patchelf" "pwninit")
+blacklist=("linux-vdso.so.1") # do not extract these files from the container
+default_outfile="patched"
+default_dockerfile="Dockerfile"
+patcher="patchelf"
+IMAGE_NAME="temp_challenge"
+CONTAINER_NAME="temp"
+LD="ld-linux-x86-64.so.2"
+
+# Logging functions:
+function log()     { echo -e "\e[32m[*]\e[0m $1"; }
+function error()   { echo -e "\e[31m[!]\e[0m $1"; [[ ! -z $2 ]] && exit "$2"; }
+function warning() { echo -e "\e[33m[?]\e[0m $1"; }
+function msg()     { echo -e "\e[34m[+]\e[0m $@"; }
+
+function usage() {
+	echo; echo -e "$0 [options]"
+	echo -e "\t--binary     | -b - Binary to patch                      [\e[31mREQUIRED\e[0m]"
+	echo -e "\t--dockerfile | -d - Dockerfile to extract libraries from [\e[33mDefault\e[0m: \e[32m$default_dockerfile\e[0m]"
+	echo -e "\t--outfile    | -o - Output file name                     [\e[33mDefault\e[0m: \e[32m[BINARY]-$default_outfile\e[0m]"
+	echo -e "\t--patcher    | -p - The binary to use for patching       [\e[33mDefault\e[0m: \e[32m$patcher\e[0m]"
+	echo -e "\t[\e[34m\e[4mAvailable Patchers\e[0m: \e[31m${patchers[@]}\e[0m]"
+	[[ ! -z "$1" ]] && exit "$1"
+}
+
+function validate() {
+	# basic function to validate if the argument is valid and 
+	# if the passed file exists or not.
+	[[ -z "$1" ]]   && error "No $2 specified!" 1
+	[[ ! -f "$1" ]] && error "\e[33m$1\e[0m is not a valid file" 1
+	realpath "$1"
+}
+
+function set_binary() {
+	[[ -z "$1" ]] && error "No binary name specified" 1
+	[[ ! -f "$1" ]] && error "\e[33m$1\e[0m is not a valid file" 1
+	binary=`realpath "$1"`
+}
+
+function set_dockerfile() {
+	[[ -z "$1" ]] && dockerfile="$default_dockerfile" || dockerfile="$1"
+	[[ ! -f "$dockerfile" ]] && error "\e[33m$1\e[0m is not a valid file" 1
+	dockerfile=`realpath $dockerfile`
+}
+
+function set_outfile() {
+	default="$binary-$default_outfile"
+	if [[ -z "$1" && ! -z $out_already ]]; then
+		warning "No output file specified. Defaulting to \e[34m$default\e[0m"
+		outfile="$default"
+	fi
+
+	if [[ -f "$outfile" && ! -z "$1" ]]; then
+		warning "\e[31m$1\e[0m is already a file. Defaulting to: \e[34m$default\e[0m"
+		outfile="$default"
+	fi
+
+	[[ -z "$outfile" ]] && outfile="$default"
+}
+
+function set_patcher() {
+	[[ ! -z "$1" ]] && patcher="$1"
+	searcher="\<${patcher}\>"
+	if [[ ${patchers[@]} =~ $searcher ]]; then
+		command -v "$patcher" 2>&1 >/dev/null
+		[[ $? != 0 ]] && error "$patcher not found in PATH. Please check." 1
+	else
+		allowed="${patchers[@]}"
+		error "Invalid patcher. Only allowed: \e[31m$allowed\e[0m" 1
+	fi
+}
+
+function get_deps_from_bin() {
+	# This function; using ldd will extract the dependencies names.
+	deps=()
+	files=$(ldd $binary | awk -F ' ' '{print $1}')
+	for file in $files; do
+		file=`basename $file`
+		searcher="\<${file}\>"
+		if [[ ${blacklist} =~ $searcher ]]; then
+			continue
+		fi
+		deps+=("$file")
+	done
+	echo "${deps[@]}"
+}
+
+function setup_container() {
+
+	command -v "docker" 2>&1 >/dev/null
+	[[ $? != 0 ]] && error "Docker not found. Please install docker to continue" 1
+
+	(docker ps | grep "$CONTAINER_NAME") 2>&1 >/dev/null
+	if [[ $? == 0 ]]; then
+		warning "Found a container running with name \e[36m$CONTAINER_NAME\e[0m. Stopping it before continuing"
+		docker stop "$CONTAINER_NAME" 2>&1 >/dev/null
+	fi
+
+	# Extract `FROM` statement, and creating another file with only the IMAGE, and a `sleep` entrypoint:
+	# Only get the first result.
+	from=$(cat "$dockerfile" | grep -i "^FROM" | cut -d $'\n' -f1)
+	# TODO: Make it generic and not specific:
+	img_name=`echo "$from" | grep -ioE '((theflash.*|ubuntu.*|debian.*|fedora.*|arch.*|python.*|php.*|apache.*):[^ \n]+)'`
+	log "Extracted Image from \"\e[31m$dockerfile\e[0m\": \e[33m$img_name\e[0m"
+
+	tmp_dir=$(mktemp -d)
+	tmp_file=$(mktemp "$tmp_dir/temp_Docker_XXX")
+
+	[ -f "$tmp_file" ] && rm -f "$tmp_file"
+
+	echo "FROM $img_name" > "$tmp_file"
+	echo 'ENTRYPOINT ["sleep", "1000"]' >> "$tmp_file"
+
+	log "Wrote temporary Dockerfile: \e[33m$tmp_file\e[0m"
+	log "Building image \e[36m$IMAGE_NAME\e[0m."
+	docker build -f "$tmp_file" -t "$IMAGE_NAME" . 2>&1 >/dev/null
+
+	log "Built image with name: \e[33m$IMAGE_NAME\e[0m"
+
+	container_id=$(docker run -d --rm -q --name "$CONTAINER_NAME" "$IMAGE_NAME")
+	msg "Ran container (\e[36m$CONTAINER_NAME\e[0m) with id \e[33m$container_id\e[0m"
+}
+
+function find_and_copy() {
+	[[ -z "$1" ]] && return
+	path=$(docker exec -it "$CONTAINER_NAME" sh -c "find / -name $1 -exec realpath {} \; 2>/dev/null | head -1")
+	[[ $? != 0 && $? != 1 ]] && error "Unable to extract \e[33m$1\e[0m path. Possible error: \e[31m$path\e[0m"
+	c_path="${path%?}"
+	file_path="${c_path//[$'\t\r\n ']}"
+
+	docker cp "$container_id":"$file_path" "$1" 2>&1 >/dev/null
+	if [[ $? != 0 ]]; then
+		warning "Unable to copy file from the container :("
+	else
+		msg "Copied from \e[33m\"$file_path\"\e[0m to \e[36m\"$1\"\e[0m"
+		chmod +x "$1"
+	fi
+}
+
+function patch_binary() {
+
+	log "Patching \e[33m$binary\e[0m using \e[36m$patcher\e[0m to \e[31m$outfile\e[0m"
+
+	if [[ "$patcher" == "patchelf" ]]; then
+		cp "$binary" "$outfile"
+		[[ $? != 0 ]] && error "Unable to make clone of the file. Modifying original." 1
+		patchelf --set-interpreter "$LD" --set-rpath . "$outfile"
+		[[ $? != 0 ]] && error "An error occurred when running patchelf." 1
+	elif [[ "$patcher" == "pwninit" ]]; then
+		pwninit --no-template --bin "$binary"
+	else
+		error "Invalid binary to patch using: \e[31m$patcher\e[0m" 1
+	fi
+	msg "Done patching!"
+}
+
+function cleanup() {
+	log "Cleaning up...."
+	docker stop "$CONTAINER_NAME" 2>&1 >/dev/null
+	msg "Stopped (\e[31m$CONTAINER_NAME\e[0m) \e[33m$container_id\e[0m"
+
+	if [[ $DELETE != 0 ]]; then
+		docker rmi "$IMAGE_NAME" 2>&1 >/dev/null
+		[[ $? != 0 ]] && error "Unable to delete \e[31m$IMAGE_NAME\e[0m" 1
+		msg "Deleted \e[31m$IMAGE_NAME\e[0m"
+	fi
+}
+
+if [[ $# == 0 ]];  then
+	error "No arguments supplied!"
+	usage 1
+fi
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -b|--binary) set_binary "$2"; shift ;;
+        -d|--dockerfile) set_dockerfile "$2"; shift ;;
+        -o|--outfile) out_already=1; set_outfile "$2"; shift ;;
+        -p|--patcher) set_patcher "$2"; shift ;;
+        -h|--help) usage 0 ;;
+        *) echo "Invalid parameter: $1"; usage 1;;
+    esac
+    shift
+done
+
+set_binary "$binary"
+set_dockerfile "$dockerfile"
+set_outfile "$outfile"
+set_patcher "$patcher"
+
+deps=$(get_deps_from_bin "$binary")
+setup_container
+
+for dep in $deps; do find_and_copy "$dep"; done
+patch_binary
+cleanup

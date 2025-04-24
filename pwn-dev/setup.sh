@@ -2,7 +2,7 @@
 
 ##### Modifiable variables ########
 OVERRIDE_THEME="alanpeabody"      # zsh theme:
-BAT_VER="0.25.0" # batcat version
+BAT_VER="0.25.0"                  # batcat version
 ###################################
 
 set -x
@@ -47,7 +47,7 @@ if [[ "$ARCH" != "aarch64" ]]; then
 fi
 
 # Set the --break-system-packages if VERSION >= 23.04
-[[ "$VERSION" == "23.04" || "$VERSION" == "24.04" ]] && PIP_ARGS="--break-system-packages"
+[[ "$VERSION" == "23.04" || "$VERSION" == "24.04" || "$VERSION" == "25.04" ]] && PIP_ARGS="--break-system-packages"
 
 # python3.6 is bare minimum for most tools to work.
 if [[ "$VERSION" == "16.04" ]]; then
@@ -79,7 +79,7 @@ fi
 
 # Installing python-based tools:
 pip3 install --upgrade --no-cache-dir $PIP_ARGS \
-	cmake argparse pwntools prompt_toolkit ropper \
+	cmake argparse pwntools prompt_toolkit ropper pycryptodome \
 	ROPGadget angr IPython uncompyle6 z3-solver smmap2 docker discord \
 	apscheduler pebble r2pipe crccheck tqdm ptrlib libdebug pwn-flashlib
 
@@ -133,6 +133,7 @@ end
 source /opt/Pwngdb/pwngdb.py
 source /opt/Pwngdb/angelheap/gdbinit.py
 source /opt/pt-dump/pt.py
+source /opt/pwndbg/gdbinit.py
 
 define hook-run
 python
@@ -217,7 +218,7 @@ cargo install pwninit
 
 # install new tools
 git clone https://github.com/zolutal/kropr /opt/kropr
-cd /opt/ckropr && ./install.sh
+cd /opt/kropr && ./install.sh
 cd /opt && rm -rf /opt/kropr
 
 git clone https://github.com/zolutal/rcpio /opt/rcpio
@@ -230,12 +231,13 @@ git clone https://github.com/zolutal/pwn_gadget && \
 pip install --no-cache-dir $PIP_ARGS pwn_gadget/ && \
 echo "source /opt/pwn_gadget/pwn_gadget.py" >> ~/.gdbinit
 
-echo "CTF{F4k3_fl4g_f0r_t3sting}" > /flag
+echo -n "CTF{F4k3_fl4g_f0r_t3sting}" > /flag
 cp /flag /flag.txt
 cp /flag /root/flag.txt
 cp /flag /root/flag
-chmod +x /usr/bin/{get-libc-from-dockerfile,str2hex,str2lehex}
- 
+chmod +x /usr/bin/{get-deps-from-dockerfile,get-libc-from-dockerfile,str2hex,str2lehex}
+cp /usr/bin/readflag /
+
 # Installing Rappel:
 git clone https://github.com/yrp604/rappel /opt/rappel
 cd /opt/rappel
@@ -256,7 +258,6 @@ fi
 echo "alias fixperms=\"chown 1000:1000\"" >> ~/.zshrc
 ## Exploit templates:
 echo "alias get-exploit=\"cp /root/Templates/exploit.py .\""    >> ~/.zshrc
-echo "alias get-fmt=\"cp /root/Templates/exploit-fmt.py .\""    >> ~/.zshrc
 echo "alias fmt-generator=\"cp /root/Templates/generate.py .\"" >> ~/.zshrc
 
 # Delete all the caches:

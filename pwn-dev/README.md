@@ -27,6 +27,8 @@ pwn-dev --help
 Usage: pwn-dev <version>
 Available versions:
 	 latest   <-- Default
+     2504
+     2404
 	 2204
 	 2004
 	 1804
@@ -48,9 +50,12 @@ Following versions are currently available with the base images in pwn-dev:
 
 | Version | Base Image |
 | --- | --- |
-| latest | ubuntu:22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
-| 2204 | ubuntu:22.04@sha256:f9d633ff6640178c2d0525017174a688e2c1aef28f0a0130b26bd5554491f0da |
-| 2004 | ubuntu:20.04@sha256:80ef4a44043dec4490506e6cc4289eeda2d106a70148b74b5ae91ee670e9c35d |
+| latest | ubuntu:22.04@sha256:9a302811bba2ae9533ddae0b563af29c112f1262329e508f13c0c532d5ba7c19 |
+| 2504 | ubuntu:25.04@sha256:9a302811bba2ae9533ddae0b563af29c112f1262329e508f13c0c532d5ba7c19 |
+| 2404 | ubuntu:24.04@sha256:f8b860e4f9036f2694571770da292642eebcc4c2ea0c70a1a9244c2a1d436cd9 |
+| 2304 | ubuntu:23.04@sha256:5a828e28de105c3d7821c4442f0f5d1c52dc16acf4999d5f31a3bc0f03f06edd |
+| 2204 | ubuntu:22.04@sha256:a76d0e9d99f0e91640e35824a6259c93156f0f07b7778ba05808c750e7fa6e68 |
+| 2004 | ubuntu:20.04@sha256:c664f8f86ed5a386b0a340d981b8f81714e21a8b9c73f658c4bea56aa179d54a |
 | 1804 | ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98 |
 | 1604 | ubuntu:16.04@sha256:1f1a2d56de1d604801a9671f301190704c25d604a416f59e03c04f5c6ffee0d6 |
 
