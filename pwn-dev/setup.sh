@@ -16,7 +16,7 @@ _64_BIT=""
 dpkg --add-architecture "$_32_BIT" && \
 	apt update
 
-[[ "$VERSION" == "24.04" ]] && ncurses="libncurses6" || ncurses="libncurses6"
+[[ "$VERSION" == "16.04" || "$VERSION" == "18.04" || "$VERSION" == "20.04"  ]] && ncurses="libncurses5" || ncurses="libncurses6"
 
 # Installing LIBS
 DEBIAN_FRONTEND=noninteractive \
@@ -26,8 +26,8 @@ DEBIAN_FRONTEND=noninteractive \
 	libc6-dbg libcapstone-dev libseccomp-dev libpython3-dev libssl-dev libffi-dev libsqlite3-dev \
 	ruby-dev zlib1g-dev gcc g++ build-essential python3 python3-pip strace ltrace nasm yasm \
 	unzip man-db net-tools iputils-ping netcat-traditional socat p7zip-full cmake autoconf \
-	file ruby ruby-dev g++-multilib* gcc-multilib* curl wget git patchelf gdb gdb-multiarch \
-	dos2unix elfutils binutils-* tmux nano rpm2cpio cpio qemu-system qemu-user qemu-user-static \
+	file ruby ruby-dev g++-multilib gcc-multilib curl wget git patchelf gdb gdb-multiarch \
+	dos2unix elfutils tmux nano rpm2cpio cpio qemu-system qemu-user qemu-user-static \
 	qemu-kvm libc6-$_64_BIT-cross libc6-dbg-$_64_BIT-cross libc6-$_32_BIT-cross libc6-dbg-$_32_BIT-cross \
 	autoconf automake libtool flex bison zsh vim pkg-config libdwarf-dev libelf-dev libiberty-dev linux-headers-generic
 
@@ -80,8 +80,8 @@ fi
 # Installing python-based tools:
 pip3 install --upgrade --no-cache-dir $PIP_ARGS \
 	cmake argparse pwntools prompt_toolkit ropper \
-	ROPGadget angr IPython uncompyle6 z3-solver smmap2 \
-	apscheduler pebble r2pipe crccheck tqdm ptrlib libdebug
+	ROPGadget angr IPython uncompyle6 z3-solver smmap2 docker discord \
+	apscheduler pebble r2pipe crccheck tqdm ptrlib libdebug pwn-flashlib
 
 # Installing GDB plugins:
 git clone https://github.com/TheFlash2k/Pwngdb /opt/Pwngdb
